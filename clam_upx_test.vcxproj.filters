@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="clamav_shim.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lzma_iface.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LzmaDec.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="upx_elf.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="upx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clam_upx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lzma_iface.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LzmaDec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="upx_elf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

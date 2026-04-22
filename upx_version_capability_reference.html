@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>UPX Version Capability Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:      #ffffff;
+    --bg2:     #f5f5f5;
+    --ink:     #000000;
+    --ink2:    #222222;
+    --ink3:    #555555;
+    --rule:    #cccccc;
+    --accent:  #1a3a6a;
+    --accent2: #8b2200;
+  }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  .page-wrap { max-width: 900px; margin: 0 auto; padding: 48px 40px 80px; }
+
+  .doc-header {
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 20px;
+    margin-bottom: 44px;
+  }
+  .doc-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 8px;
+  }
+  .doc-title {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    color: var(--ink);
+  }
+  .doc-meta {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink3);
+    margin-top: 10px;
+  }
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 6px;
+    margin: 48px 0 16px;
+  }
+  h2:first-child { margin-top: 0; }
+
+  h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink3);
+    margin: 24px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: left;
+    padding: 7px 12px;
+    background: var(--bg2);
+    border: 1px solid var(--rule);
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 7px 12px;
+    border: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink2);
+  }
+  tr:nth-child(even) td { background: var(--bg2); }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px;
+    background: #ebebeb;
+    color: var(--accent2);
+    padding: 1px 4px;
+    border-radius: 3px;
+  }
+
+  .footer {
+    margin-top: 60px;
+    padding-top: 16px;
+    border-top: 1px solid var(--rule);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink3);
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+<div class="doc-header">
+  <div class="doc-label">ClamAV UPX Unpacker — clam_upx_test</div>
+  <div class="doc-title">UPX Version Capability Reference</div>
+  <div class="doc-meta">Verified against UPX source: 1.20 · 2.02 · 3.09 · 4.2.0 · 5.0.1 · 5.1.1</div>
+</div>
+
+<h2>Default Method Selection Logic</h2>
+<h3>By version range</h3>
+<table>
+      <thead><tr><th>Base method</th><th>Fetch width</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td>getDefaultCompressionMethods_le32()</td><td>LE32</td><td>win32/pe, win64/pe, linux/i386 ELF, linux/amd64 ELF, djgpp2, watcom/le, most vmlinux</td></tr>
+        <tr><td>getDefaultCompressionMethods_8()</td><td>8-bit</td><td>linux/arm ELF, linux/arm64 ELF, linux/mips ELF, linux/riscv64 ELF, macho/ARM, ps1/exe (32-bit)</td></tr>
+      </tbody>
+    </table>
+<h3>Method → CLI flag mapping</h3>
+<table>
+      <thead><tr><th>Format class</th><th>Custom method list</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>PackDos16Com</td><td><code>{M_NRV2B_LE16, M_END}</code></td><td>DOS COM; 16-bit fetch only, NRV2B only</td></tr>
+        <tr><td>PackMachDylib (amd64)</td><td><code>{M_NRV2E_LE32, M_END}</code></td><td>dylib; single method forced</td></tr>
+        <tr><td>PackWinCeArm</td><td><code>{M_NRV2B_8, M_NRV2E_8, M_LZMA, M_END}</code></td><td>WinCE ARM; explicit 3-method list</td></tr>
+      </tbody>
+    </table>
+<h2>CLI Flag Reference</h2>
+<h3>Flag availability by version</h3>
+<table>
+      <thead><tr><th>Flag</th><th>Option ID</th><th>First available</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td>--nrv2b</td><td>702</td><td>2.02</td><td>Forces <code>opt->method = M_NRV2B_LE32</code> (or _8 depending on format)</td></tr>
+        <tr><td>--nrv2d</td><td>704</td><td>2.02</td><td>Forces <code>M_NRV2D</code></td></tr>
+        <tr><td>--nrv2e</td><td>705</td><td>2.02</td><td>Forces <code>M_NRV2E</code></td></tr>
+        <tr><td>--lzma</td><td>721</td><td>4.20</td><td>Forces <code>M_LZMA</code></td></tr>
+        <tr><td>--no-lzma</td><td>722</td><td>4.20</td><td>Disables LZMA from all-methods expansion</td></tr>
+        <tr><td>--prefer-ucl</td><td>724</td><td>3.09+</td><td>Sets <code>opt->prefer_ucl = true</code>; routes NRV calls to UCL library (identical output)</td></tr>
+        <tr><td>--prefer-nrv</td><td>723</td><td>3.09+</td><td>Clears <code>prefer_ucl</code> (default state)</td></tr>
+        <tr><td>--all-methods</td><td>524</td><td>2.02</td><td>Sets <code>opt->all_methods</code>; expands method list to full set for the format. Removed from help in 3.09+, superseded by --brute.</td></tr>
+        <tr><td>--brute</td><td>—</td><td>3.09</td><td>Tries all methods × all filters. Equivalent to <code>M_ALL</code> expansion excluding M_ULTRA_BRUTE entries.</td></tr>
+        <tr><td>--ultra-brute</td><td>—</td><td>3.09</td><td>Adds M_LZMA_003 and M_LZMA_407 LZMA variants to the search space.</td></tr>
+        <tr><td>-1 … -9</td><td>—</td><td>1.20</td><td>Compression level. Level 1 forces NRV2B regardless of file size.</td></tr>
+      </tbody>
+    </table>
+<h2>Version Capability Matrix</h2>
+<h3>Runtime capability by version</h3>
+<table>
+      <thead><tr><th>Capability</th><th>1.20</th><th>2.02</th><th>3.09</th><th>4.20</th><th>5.01</th><th>5.11</th></tr></thead>
+      <tbody>
+        <tr><td>NRV2B compression</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>NRV2D compression</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>NRV2E compression</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>LZMA compression</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>Method CLI flags</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>--lzma flag</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>win64/pe (64-bit PE)</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>linux/amd64 ELF</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>linux/arm64 ELF</td><td>—</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>linux/riscv64 ELF</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>✓</td></tr>
+        <tr><td>--brute / --ultra-brute</td><td>—</td><td>—</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr>
+        <tr><td>zstd (staged, inactive)</td><td>—</td><td>—</td><td>—</td><td>staged</td><td>staged</td><td>staged</td></tr>
+        <tr><td>bzip2 (staged, inactive)</td><td>—</td><td>—</td><td>—</td><td>—</td><td>staged</td><td>staged</td></tr>
+      </tbody>
+    </table>
+<h2>Version Selection Guidance</h2>
+<h3>Target → minimum version</h3>
+<table>
+      <thead><tr><th>Required method</th><th>Minimum version</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>--nrv2b</td><td>2.02</td><td>Present in 1.20 but not flag-selectable. Use 2.02+ if explicit flag required.</td></tr>
+        <tr><td>--nrv2d</td><td>2.02</td><td>Same as NRV2B.</td></tr>
+        <tr><td>--nrv2e</td><td>2.02</td><td>Stub absent in 1.20 — will fail silently or error.</td></tr>
+        <tr><td>--lzma</td><td>4.20</td><td>Stubs present from 3.09 but --lzma CLI flag not exposed until 4.20.</td></tr>
+        <tr><td>win64/pe target</td><td>4.20</td><td>No win64 packer class before 4.0.</td></tr>
+        <tr><td>linux/arm64 ELF target</td><td>4.20</td><td>arm64 stubs absent in 3.09.</td></tr>
+        <tr><td>linux/riscv64 ELF target</td><td>5.10</td><td>Source-confirmed in 5.1.1; first appeared 5.1.0 per release notes.</td></tr>
+      </tbody>
+    </table>
+<h3>Recommended test versions</h3>
+<table>
+      <thead><tr><th>Version</th><th>Anomaly</th></tr></thead>
+      <tbody>
+        <tr><td>1.20</td><td>No method flags; NRV2E absent; win64/pe and linux/amd64 absent. Will silently fall back to NRV2B or NRV2D based on size heuristic.</td></tr>
+        <tr><td>2.02</td><td>LZMA absent. --lzma flag will error. linux/amd64 present but NRV2E stub may be limited to certain arch combinations — confirm against specific target before relying on it.</td></tr>
+        <tr><td>3.09</td><td>LZMA stubs present for all arches but no --lzma CLI flag. LZMA can only be invoked via --brute/--ultra-brute or by patching opt->method directly. win64/pe absent.</td></tr>
+        <tr><td>4.20 / 5.01 / 5.11</td><td>Full capability. Differences between these three are minor (riscv64, staged backends, bug fixes). For a stable test corpus, 4.20 is the oldest version covering all major use cases.</td></tr>
+      </tbody>
+    </table>
+<h2>Version Comparison</h2>
+<h3>PE format support</h3>
+<table>
+      <thead>
+        <tr>
+          <th style="text-align:left; font-family:inherit;">Version</th>
+          <th>Release date</th>
+          <th>Gap</th>
+          <th>Source ingested</th>
+          <th style="text-align:left; font-family:inherit;">Notable addition</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1.20</td><td>May 23, 2001</td><td>—</td>
+          <td><span class="pill-src">yes</span></td>
+          <td style="text-align:left; font-family:inherit; color:#444;">NRV2B + NRV2D only; win32/pe; linux/386; no NRV2E; no CLI method flags</td>
+        </tr>
+        <tr>
+          <td>2.02</td><td>Aug 13, 2006</td><td>+5 yr</td>
+          <td><span class="pill-src">yes</span></td>
+          <td style="text-align:left; font-family:inherit; color:#444;">NRV2E stubs; linux/amd64 64-bit ELF; --nrv2b/d/e flags; --all-methods</td>
+        </tr>
+        <tr>
+          <td>3.09</td><td>Feb 18, 2013</td><td>+7 yr</td>
+          <td><span class="pill-src">yes</span></td>
+          <td style="text-align:left; font-family:inherit; color:#444;">LZMA stubs across all arches; UCL/zlib backend infrastructure; --brute/--ultra-brute</td>
+        </tr>
+        <tr>
+          <td>4.20</td><td>Oct 26, 2023</td><td>+10 yr</td>
+          <td><span class="pill-src">yes</span></td>
+          <td style="text-align:left; font-family:inherit; color:#444;">win64/pe; --lzma CLI flag; arm64 ELF stubs; zstd backend staged</td>
+        </tr>
+        <tr>
+          <td>5.01</td><td>May 6, 2025</td><td>+2 yr</td>
+          <td><span class="pill-src">yes</span></td>
+          <td style="text-align:left; font-family:inherit; color:#444;">bzip2 backend staged; lzma-multi stub (i386); --fileinfo</td>
+        </tr>
+        <tr>
+          <td>5.02</td><td>Jul 20, 2025</td><td>+2 mo</td>
+          <td class="no" style="font-size:12px;">—</td>
+          <td style="text-align:left; font-family:inherit; color:#444;">Bug fixes only</td>
+        </tr>
+        <tr>
+          <td>5.10</td><td>Jan 7, 2026</td><td>+6 mo</td>
+          <td class="no" style="font-size:12px;">—</td>
+          <td style="text-align:left; font-family:inherit; color:#444;">linux/riscv64 ELF added (release notes only — not ingested)</td>
+        </tr>
+        <tr>
+          <td>5.11<span class="pill-new">latest</span></td><td>Mar 5, 2026</td><td>+2 mo</td>
+          <td><span class="pill-src">yes</span></td>
+          <td style="text-align:left; font-family:inherit; color:#444;">riscv64 NRV2B/2D/2E + LZMA stubs; MIPS shared-object stubs; auipc filter (RISC-V); arm.v5a ELF stub</td>
+        </tr>
+      </tbody>
+    </table>
+<h3>ELF format support</h3>
+<table>
+      <thead>
+        <tr>
+          <th>Format</th>
+          <th><span class="ver-header">1.20</span><span class="ver-year">2001</span></th>
+          <th><span class="ver-header">2.02</span><span class="ver-year">2006</span></th>
+          <th><span class="ver-header">3.09</span><span class="ver-year">2013</span></th>
+          <th><span class="ver-header">4.20</span><span class="ver-year">2023</span></th>
+          <th><span class="ver-header">5.01</span><span class="ver-year">2025</span></th>
+          <th><span class="ver-header">5.11</span><span class="ver-year">2026</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="divider-row"><td colspan="7">Windows PE</td></tr>
+        <tr>
+          <td>win32/pe  (32-bit)</td>
+          <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>win64/pe  (64-bit)</td>
+          <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr class="divider-row"><td colspan="7">Linux ELF</td></tr>
+        <tr>
+          <td>linux/i386  (32-bit)</td>
+          <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>linux/amd64  (64-bit)</td>
+          <td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>linux/arm64  (64-bit)</td>
+          <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>linux/riscv64<span class="pill-new">5.10</span></td>
+          <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td>
+        </tr>
+      </tbody>
+    </table>
+<h3>Compression method support</h3>
+<table>
+      <thead>
+        <tr>
+          <th>Method / role</th>
+          <th><span class="ver-header">1.20</span><span class="ver-year">2001</span></th>
+          <th><span class="ver-header">2.02</span><span class="ver-year">2006</span></th>
+          <th><span class="ver-header">3.09</span><span class="ver-year">2013</span></th>
+          <th><span class="ver-header">4.20</span><span class="ver-year">2023</span></th>
+          <th><span class="ver-header">5.01</span><span class="ver-year">2025</span></th>
+          <th><span class="ver-header">5.11</span><span class="ver-year">2026</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="divider-row"><td colspan="7">NRV family — primary compression; decompressor stub embedded in packed binary</td></tr>
+        <tr>
+          <td>NRV2B<span class="ev">l_lx_n2b.h → nrv2b_d*.S</span></td>
+          <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>NRV2D<span class="ev">l_lx_n2d.h → nrv2d_d*.S</span></td>
+          <td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>NRV2E<span class="ev">nrv2e_d*.S</span></td>
+          <td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr class="divider-row"><td colspan="7">LZMA — primary compression; decompressor stub embedded in packed binary</td></tr>
+        <tr>
+          <td>LZMA<span class="ev">lzma_d*.S / compress_lzma.cpp</span></td>
+          <td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr class="divider-row"><td colspan="7">UCL — NRV fallback; identical algorithm and wire format, different library</td></tr>
+        <tr>
+          <td>UCL<span class="ev">compress_ucl.cpp / vendor/ucl/</span></td>
+          <td class="no">—</td><td class="no">—</td>
+          <td><span class="badge badge-amber">fallback</span></td>
+          <td><span class="badge badge-amber">fallback</span></td>
+          <td><span class="badge badge-amber">fallback</span></td>
+          <td><span class="badge badge-amber">fallback</span></td>
+        </tr>
+        <tr class="divider-row"><td colspan="7">zlib — utility only; provides adler32/crc32, never invoked as compressor</td></tr>
+        <tr>
+          <td>zlib<span class="ev">compress_zlib.cpp</span></td>
+          <td class="no">—</td><td class="no">—</td>
+          <td><span class="badge badge-gray">checksum only</span></td>
+          <td><span class="badge badge-gray">checksum only</span></td>
+          <td><span class="badge badge-gray">checksum only</span></td>
+          <td><span class="badge badge-gray">checksum only</span></td>
+        </tr>
+        <tr class="divider-row"><td colspan="7">zstd / bzip2 — staged; full implementation present, M_ constants marked NOT YET USED in conf.h</td></tr>
+        <tr>
+          <td>zstd<span class="ev">compress_zstd.cpp / M_ZSTD=16</span></td>
+          <td class="no">—</td><td class="no">—</td><td class="no">—</td>
+          <td><span class="badge badge-blue">staged</span></td>
+          <td><span class="badge badge-blue">staged</span></td>
+          <td><span class="badge badge-blue">staged</span></td>
+        </tr>
+        <tr>
+          <td>bzip2<span class="ev">compress_bzip2.cpp / M_BZIP2=17</span></td>
+          <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+          <td><span class="badge badge-blue">staged</span></td>
+          <td><span class="badge badge-blue">staged</span></td>
+        </tr>
+        <tr class="divider-row"><td colspan="7">CLI flags</td></tr>
+        <tr>
+          <td>--nrv2b / --nrv2d / --nrv2e</td>
+          <td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>--lzma</td>
+          <td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+        <tr>
+          <td>--all-methods</td>
+          <td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td>
+        </tr>
+        <tr>
+          <td>--brute / --ultra-brute</td>
+          <td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td>
+        </tr>
+      </tbody>
+    </table>
+
+<div class="footer">
+  Derived from source analysis of six UPX release trees (1.20–5.1.1).
+  Method constants frozen since 3.09. See clam_upx_test for full test corpus.
+</div>
+
+</div>
+</body>
+</html>
